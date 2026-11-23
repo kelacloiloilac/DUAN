@@ -1,0 +1,10 @@
+# Dataset khong dua len Git
+PlantVillage-Dataset-master/
+plant_disease_project/data/
+
+# Bytecode va cache
+__pycache__/
+*.py[cod]
+
+
+.venv/

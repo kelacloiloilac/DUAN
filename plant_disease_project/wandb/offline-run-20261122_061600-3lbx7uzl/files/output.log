@@ -1,0 +1,6 @@
+Traceback (most recent call last):                                             
+Epoch 01: train F1=0.6190, val F1=0.3333
+  File "<string>", line 1, in <module>
+  File "C:\Users\kelac\Downloads\HOCTAP\deeplearning\deeplearning cuoiky\DUAN\plant_disease_project\src\train.py", line 102, in fit
+    logger.log(
+TypeError: src.train.ExperimentLogger.log() got multiple values for keyword argument 'epoch'

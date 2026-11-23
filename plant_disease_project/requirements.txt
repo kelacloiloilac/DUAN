@@ -8,3 +8,4 @@ seaborn>=0.12
 Pillow>=10.0
 jupyter>=1.0
 tqdm>=4.66
+wandb>=0.17

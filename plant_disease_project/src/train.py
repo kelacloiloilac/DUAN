@@ -5,6 +5,7 @@ from __future__ import annotations
 from copy import deepcopy
 from datetime import datetime, timezone
 import json
+import traceback
 from pathlib import Path
 from typing import Dict
 
@@ -62,6 +63,7 @@ def fit(
     logger: ExperimentLogger | None = None,
     run_id: str | None = None,
     experiment_name: str | None = None,
+    wandb_run=None,
 ):
     """Train using validation Macro-F1 for model selection."""
     model.to(device)
@@ -78,6 +80,12 @@ def fit(
             event="run_started", run_id=run_id, experiment=experiment_name,
             epochs=epochs, learning_rate=learning_rate, device=str(device),
         )
+    if wandb_run is not None:
+        wandb_run.log({
+            "status/run_started": 1,
+            "experiment/epoch_limit": epochs,
+            "experiment/learning_rate": learning_rate,
+        })
     try:
         for epoch in range(1, epochs + 1):
             train_metrics = run_epoch(model, loaders["train"], criterion, device, optimizer)
@@ -93,8 +101,10 @@ def fit(
             if logger is not None:
                 logger.log(
                     event="epoch_completed", run_id=run_id, experiment=experiment_name,
-                    epoch=epoch, **row,
+                    **row,
                 )
+            if wandb_run is not None:
+                wandb_run.log(row)
             if val_metrics["macro_f1"] > best_f1:
                 best_f1 = val_metrics["macro_f1"]
                 best_state = deepcopy(model.state_dict())
@@ -107,12 +117,28 @@ def fit(
                 event="run_completed", run_id=run_id, experiment=experiment_name,
                 best_val_macro_f1=best_f1,
             )
+        if wandb_run is not None:
+            wandb_run.log({
+                "status/run_completed": 1,
+                "val/best_macro_f1": best_f1,
+            })
     except Exception as error:
+        traceback_text = traceback.format_exc()
         if logger is not None:
             logger.log(
                 event="run_failed", run_id=run_id, experiment=experiment_name,
                 error_type=type(error).__name__, error_message=str(error),
+                traceback=traceback_text,
             )
+        if wandb_run is not None:
+            wandb_run.log({
+                "status/run_failed": 1,
+                "error/error_type": type(error).__name__,
+                "error/error_message": str(error),
+            })
+            wandb_run.summary["error_type"] = type(error).__name__
+            wandb_run.summary["error_message"] = str(error)
+            wandb_run.summary["traceback"] = traceback_text
         raise
     model.load_state_dict(best_state)
     return model, history
