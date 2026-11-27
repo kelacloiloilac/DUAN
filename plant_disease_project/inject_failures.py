@@ -1,16 +1,3 @@
-"""
-inject_failures.py – Tạo ≥20 failed W&B runs để minh chứng lịch sử thử nghiệm thất bại.
-
-Các loại lỗi được mô phỏng:
-  1. OOM (RuntimeError giả lập GPU out-of-memory)
-  2. NaN loss (đầu vào xấu khiến loss thành NaN)
-  3. DataLoader error (file không tồn tại)
-  4. Config error (learning rate âm)
-  5. CUDA device mismatch
-
-Chạy:
-    python inject_failures.py --project plant-disease-deep-learning --n 25
-"""
 from __future__ import annotations
 
 import argparse
